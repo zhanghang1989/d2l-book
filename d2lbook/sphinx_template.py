@@ -1,11 +1,14 @@
 
 sphinx_conf = r"""
 import sys
+import inspect
 from sphinx.ext.autosummary import Autosummary
 from sphinx.ext.autosummary import get_documenter
+from sphinx.ext.autodoc import ClassDocumenter
 from docutils.parsers.rst import directives
 from sphinx.util.inspect import safe_getattr
 import re
+import autogluon as ag
 
 
 sys.path.insert(0, '..')
@@ -131,6 +134,16 @@ class AutoAutoSummary(Autosummary):
         finally:
             return super(AutoAutoSummary, self).run()
 
+class AutoGluonDocumenter(ClassDocumenter):
+    objtype = 'AutoGluonObject'
+    directivetype = 'class'
+
+    @classmethod
+    def can_document_member(cls, member, membername, isattr, parent):
+        if inspect.isclass(member) and issubclass(member, ag.AutoGluonObject):
+            print('........ can document ..........', member)
+        return inspect.isclass(member) and issubclass(member, ag.AutoGluonObject)
+
 def setup(app):
     # app.add_javascript('https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js')
     app.add_javascript('d2l.js')
@@ -138,6 +151,7 @@ def setup(app):
     import mxtheme
     app.add_directive('card', mxtheme.CardDirective)
     app.add_directive('autoautosummary', AutoAutoSummary)
+    app.add_autodocumenter(AutoGluonDocumenter)
 """
 
 
